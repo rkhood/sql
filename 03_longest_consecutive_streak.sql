@@ -9,12 +9,11 @@
 --   (1, "2021-01-07", 9),
 --   (1, "2021-01-08", 2);
 
--- DELETE FROM usage_hits WHERE day >= "2021-01-05" ; 
+-- DELETE FROM usage_hits WHERE day >= "2021-01-05" ;
 
 with lags as (
   select
     ID,
-    lag(ID) over () as lag_ID,
     day,
     lag(day) over (
       partition by ID
@@ -30,8 +29,7 @@ find_breaks as (
   select
     *,
     case
-      when datediff(day, lag_day) > 1
-      or ID != lag_ID then 1
+      when datediff(day, lag_day) > 1 then 1
       else 0
     end as breaks
   from
@@ -44,8 +42,8 @@ group_streaks as (
   select
     *,
     sum(breaks) over (
+      partition by ID
       order by
-        ID,
         day
     ) as grouped
   from
